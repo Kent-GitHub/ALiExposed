@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ALi/ALi.iml" filepath="$PROJECT_DIR$/ALi/ALi.iml" />
       <module fileurl="file://$PROJECT_DIR$/ALiExposed.iml" filepath="$PROJECT_DIR$/ALiExposed.iml" />
+      <module fileurl="file://$PROJECT_DIR$/exposedtool/exposedtool.iml" filepath="$PROJECT_DIR$/exposedtool/exposedtool.iml" />
     </modules>
   </component>
 </project>

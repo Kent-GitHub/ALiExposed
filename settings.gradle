@@ -1,1 +1,1 @@
-include ':ALi'
+include ':ALi', ':exposedtool'

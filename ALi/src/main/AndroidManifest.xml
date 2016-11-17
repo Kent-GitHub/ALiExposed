@@ -15,7 +15,7 @@
             android:value="true" />
         <meta-data
             android:name="xposeddescription"
-            android:value="Kent出品_ALi系列" />
+            android:value="Kent" />
         <meta-data
             android:name="xposedminversion"
             android:value="54" />

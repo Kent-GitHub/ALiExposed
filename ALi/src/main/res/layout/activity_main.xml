@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:text="Hello World!" />
 
-    <com.kent.aliexposed.MyImageView
+    <ImageView
         android:id="@+id/test_iv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

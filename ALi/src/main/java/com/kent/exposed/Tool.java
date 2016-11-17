@@ -2,7 +2,6 @@ package com.kent.exposed;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.util.Log;
 import android.view.Gravity;
@@ -12,7 +11,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -20,6 +19,7 @@ import java.lang.reflect.Method;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public class Tool implements IXposedHookLoadPackage {
@@ -32,18 +32,57 @@ public class Tool implements IXposedHookLoadPackage {
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
         this.loadPackageParam = loadPackageParam;
-        if (loadPackageParam.packageName.equals("com.tmall.wireless") || loadPackageParam.packageName.equals("com.taobao.ju.android") || loadPackageParam.packageName.equals("com.taobao.taobao") || loadPackageParam.packageName.equals("com.kent.aliexposed")) {
+        if (loadPackageParam.packageName.equals("com.tmall.wireless")
+                || loadPackageParam.packageName.equals("com.taobao.ju.android")
+                || loadPackageParam.packageName.equals("com.taobao.taobao")
+                || loadPackageParam.packageName.equals("com.kent.aliexposed")) {
             //noinspection StatementWithEmptyBody
             if (loadPackageParam.packageName.equals("com.kent.aliexposed")) {
             }
-            //聚划算走你
-            if (loadPackageParam.packageName.equals("com.taobao.ju.android")) {
-                XposedBridge.hookAllConstructors(RelativeLayout.class, new XC_MethodHook() {
+            //聚划算
+//            if (loadPackageParam.packageName.contains("com.taobao.ju.android")) {
+//                XposedBridge.hookAllConstructors(RelativeLayout.class, new XC_MethodHook() {
+//                    @Override
+//                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+//                        Class<?> buyLayoutClass = param.thisObject.getClass();
+//                        if (buyLayoutClass.getName().equals("com.taobao.ju.android.detail.widget.ButtonBuyLayout")) {
+//                            XposedBridge.hookAllMethods(buyLayoutClass, "setGoNextClickListener", new XC_MethodHook() {
+//                                @Override
+//                                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+//                                    try {
+//                                        throw new Exception();
+//                                    } catch (Exception e) {
+//                                        Log.w(TAG, "setGoNextClickListener: ", e);
+//                                    }
+//                                }
+//                            });
+//                        }
+//                    }
+//                });
+//            }
+            //天猫
+            if (loadPackageParam.packageName.contains("com.tmall.wireless")
+                    || loadPackageParam.packageName.contains("com.taobao.taobao")
+                    ) {
+                XposedBridge.hookAllMethods(View.class, "setOnClickListener", new XC_MethodHook() {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        Class<?> buyLayoutClass = param.thisObject.getClass();
-                        if (buyLayoutClass.getName().equals("com.taobao.ju.android.detail.widget.ButtonBuyLayout")) {
-                            XposedBridge.hookAllMethods(buyLayoutClass, "setGoNextClickListener", setGoNextClickListener());
+                        Class<?> clazz = param.thisObject.getClass();
+//                        if (clazz.getName().equals("com.taobao.android.detail.kit.view.widget.base.DetailIconFontTextView")) {
+//                            Log.e(TAG, "DetailIconFontTextView: HEHEDA");
+//                            try {
+//                                throw new Exception();
+//                            } catch (Exception e) {
+//                                Log.w(TAG, "setOnClickListener: ", e);
+//                            }
+//                        }
+
+                        if (clazz.getName().equals("android.widget.TextView")) {
+                            try {
+                                throw new Exception();
+                            } catch (Exception e) {
+                                Log.e(TAG, "setOnClickListener: ", e);
+                            }
                         }
                     }
                 });
@@ -76,21 +115,8 @@ public class Tool implements IXposedHookLoadPackage {
         return new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if (mWindowManager != null) mWindowManager.removeView(mFloatLayout);
-            }
-        };
-    }
-
-    //聚划算 测试用 发现了转换ButLayout的方法
-    private XC_MethodHook setGoNextClickListener() {
-        return new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                try {
-                    //throw new Exception();
-                } catch (Exception e) {
-                    Log.w(TAG, "setGoNextClickListener: ", e);
-                }
+                if (mWindowManager != null && mFloatLayout != null && mFloatLayout.isAttachedToWindow())
+                    mWindowManager.removeView(mFloatLayout);
             }
         };
     }
@@ -107,32 +133,42 @@ public class Tool implements IXposedHookLoadPackage {
         mFloatLayout.setOrientation(LinearLayout.VERTICAL);
         //Scan btn
         Button btnScan = new Button(context);
-        String scan = "Scan It First!";
+        String scan = "Scan Layout!";
         btnScan.setText(scan);
-        //Activity btn
+        //Activity btn 1838682369@qq.com
         Button btnAtyInfo = new Button(context);
         String atyInfo = "Aty Info";
         btnAtyInfo.setText(atyInfo);
         //聚划算 btn
         Button btnJu = new Button(context);
-        String strJu = "聚划算";
+        String strJu = "Ju";
         btnJu.setText(strJu);
+        //淘宝 btn
+        Button btnTb = new Button(context);
+        String strTb = "Tb";
+        btnTb.setText(strTb);
+        //聚划算 btn
+        Button btnTm = new Button(context);
+        String strTm = "Tm";
+        btnTm.setText(strTm);
         //
         mFloatLayout.addView(btnAtyInfo);
-        mFloatLayout.addView(btnScan);
+        //mFloatLayout.addView(btnScan);
+        mFloatLayout.addView(btnTb);
+        mFloatLayout.addView(btnTm);
         mFloatLayout.addView(btnJu);
         //----------------------------------------------
         mWindowManager.addView(mFloatLayout, wmLp);
-        btnScan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btnScanLayout((Activity) context);
-            }
-        });
+//        btnScan.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                scanActivity((Activity) context);
+//            }
+//        });
         btnAtyInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                btnLogInfo(context);
+                logInfo(context);
             }
         });
         btnJu.setOnClickListener(new View.OnClickListener() {
@@ -141,30 +177,41 @@ public class Tool implements IXposedHookLoadPackage {
                 btnJu();
             }
         });
+        btnTb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnTb();
+            }
+        });
+        btnTm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnTm();
+            }
+        });
     }
 
-    private View buyLayout;
-
-    private void btnScanLayout(Activity context) {
+    private void scanActivity(Activity context, boolean logOn) {
         View content = context.getWindow().getDecorView().findViewById(android.R.id.content);
         ViewGroup rootView = ((ViewGroup) content);
-        scanLayout(rootView, 0, false);
+        scanView(rootView, 0, logOn);
     }
 
-    private void btnLogInfo(Object object) {
+    private void logInfo(Object object) {
         Log.e(TAG, "---");
         Log.e(TAG, "---------------------------------------------------------------------------------------------------");
         Log.e(TAG, "---");
         Field[] fields = object.getClass().getDeclaredFields();
-        Log.e(TAG, "btnLogInfo_Class_Name: " + object.getClass());
+        Log.e(TAG, "LogInfo_Class_Name: " + object.getClass());
         for (final Field f : fields) {
+            f.setAccessible(true);
             Object o = null;
             try {
                 o = f.get(object);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
-            Log.e(TAG, "DField_Type:" + f.getType() + " ,fieldName: " + f.getName() + " ,value: " + (o != null ? o.toString() : ""));
+            Log.e(TAG, "DField_Type:" + f.getType() + " ,fieldName: " + f.getName() + " ,value: " + (o != null ? o.toString() : "null"));
         }
         Method[] dMethods = object.getClass().getDeclaredMethods();
         for (Method m : dMethods) {
@@ -177,45 +224,77 @@ public class Tool implements IXposedHookLoadPackage {
         }
     }
 
+
+    private View juBuyLayout;
+    private boolean juAction1;
+
     private void btnJu() {
-        if (buyLayout == null) {
-            Toast.makeText(mContext, "NullPointException.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        juAction1 = true;
+        scanActivity((Activity) mContext, false);
+    }
+
+    private void juAction1() {
         try {
-            Method method = buyLayout.getClass().getDeclaredMethod("renderJoinLayoutStarted");
+            Method method = juBuyLayout.getClass().getDeclaredMethod("renderJoinLayoutStarted");
             method.setAccessible(true);
-            method.invoke(buyLayout);
+            method.invoke(juBuyLayout);
             method.setAccessible(false);
-            Log.e(TAG, "btnFixIt: renderJoinLayoutStarted");
+            Log.e(TAG, "btnJu: renderJoinLayoutStarted");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //btnLogInfo(buyLayout);
-        //logOtherInfo(buyLayout);
     }
 
-    private void scanLayout(View view, int floor, boolean logOn) {
+    private void btnTb() {
+        logInfo(mContext);
+        scanActivity((Activity) mContext, true);
+    }
+
+    private void btnTm() {
+        logInfo(mContext);
+        scanActivity((Activity) mContext, true);
+    }
+
+    private void scanView(View view, int floor, boolean logOn) {
         if (view.getClass().getName().equals("com.taobao.ju.android.detail.widget.ButtonBuyLayout")) {
-            buyLayout = view;
-            //forButtonBuyLayout(view);
+            juBuyLayout = view;
+            if (juAction1) {
+                juAction1 = false;
+                juAction1();
+            }
         }
         String ex = "";
         for (int i = 0; i < floor; i++) {
             ex += "  ";
         }
-        //Log.e(TAG, ex + "floor: " + floor + " ,View_Type: " + view.getClass().getName());
+        if (logOn) {
+            Log.e(TAG, ex + "floor: " + floor + " ,View_Type: " + view.getClass().getName());
+        }
         if (view instanceof ViewGroup) {
             int childCount = ((ViewGroup) view).getChildCount();
-            //Log.e(TAG, ex + "floor: " + floor + " ,AlsoViewGroup. child count: " + childCount);
+            if (logOn) {
+                Log.e(TAG, ex + "floor: " + floor + " ,Is ViewGroup. child count: " + childCount);
+            }
             for (int i = 0; i < childCount; i++) {
-                scanLayout(((ViewGroup) view).getChildAt(i), floor + 1, logOn);
+                scanView(((ViewGroup) view).getChildAt(i), floor + 1, logOn);
+            }
+        } else if (view instanceof TextView) {
+            if (((TextView) view).getText().toString().contains("开团提醒")
+                    || ((TextView) view).getText().toString().contains("立即购买")) {
+                Log.e(TAG, "scanView: gotcha");
+                ((TextView) view).setText("买买买");
+                getListener(view, true);
+                logInfo(view);
+            } else if (((TextView) view).getText().toString().contains("加入购物车")) {
+                ((TextView) view).setText("加购物车先");
+                getListener(view, true);
+                logInfo(view);
             }
         }
     }
 
     private void forButtonBuyLayout(View view) {
-        getListener(view);
+        getListener(view, false);
         if (view instanceof ViewGroup) {
             for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
                 forButtonBuyLayout(((ViewGroup) view).getChildAt(i));
@@ -223,7 +302,7 @@ public class Tool implements IXposedHookLoadPackage {
         }
     }
 
-    private View.OnClickListener getListener(View view) {
+    private View.OnClickListener getListener(View view, boolean logOn) {
         Log.e(TAG, "---");
         try {
             Field infoField = View.class.getDeclaredField("mListenerInfo");
@@ -232,19 +311,21 @@ public class Tool implements IXposedHookLoadPackage {
             Object mListenerInfo = infoField.get(view);
             Field listenerField = infoClass.getField("mOnClickListener");
             View.OnClickListener mOnClickListener = (View.OnClickListener) listenerField.get(mListenerInfo);
-            Log.e(TAG, "getListener_Listener clazz: " + mOnClickListener.getClass().getName());
-            Field[] dFields = mOnClickListener.getClass().getDeclaredFields();
-            for (Field f : dFields) {
-                Log.e(TAG, "Listener DFields_Type:" + f.getType() + " ,Name: " + f.getName());
-            }
-            Method[] dMethods = mOnClickListener.getClass().getDeclaredMethods();
-            for (Method m : dMethods) {
-                Class<?>[] types = m.getParameterTypes();
-                String type = "";
-                for (Class c : types) {
-                    type = type + "_" + c.getName();
+            if (logOn) {
+                Log.e(TAG, "getListener_Listener clazz: " + mOnClickListener.getClass().getName());
+                Field[] dFields = mOnClickListener.getClass().getDeclaredFields();
+                for (Field f : dFields) {
+                    Log.e(TAG, "Listener DFields_Type:" + f.getType() + " ,Name: " + f.getName());
                 }
-                Log.e(TAG, "Listener DMethods:" + m.getName() + " ,types: " + type);
+                Method[] dMethods = mOnClickListener.getClass().getDeclaredMethods();
+                for (Method m : dMethods) {
+                    Class<?>[] types = m.getParameterTypes();
+                    String type = "";
+                    for (Class c : types) {
+                        type = type + "_" + c.getName();
+                    }
+                    Log.e(TAG, "Listener DMethods:" + m.getName() + " ,types: " + type);
+                }
             }
             return mOnClickListener;
         } catch (Exception e) {
